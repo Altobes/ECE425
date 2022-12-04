@@ -495,35 +495,109 @@ void move5() {
 
 /*
   INSERT DESCRIPTION HERE, what are the inputs, what does it do, functions used
+
+  If direction is greater than zero, pivot clockwise
+  If direction is less than zero, pivot counterclockwise
+  currently set to 90 degrees
 */
 void pivot(int direction) {
+  stepperRight.setCurrentPosition(0);
+  stepperLeft.setCurrentPosition(0);
+  if (direction > 0) {
+    stepperRight.moveTo(1000);
+    stepperRight.setSpeed(500);//set right motor speed
+    stepperRight.runSpeedToPosition();//move right motor
+  } else {
+    stepperLeft.moveTo(1000);
+    stepperLeft.setSpeed(500);//set left motor speed
+    stepperLeft.runSpeedToPosition();//move left motor
+  }
+  runToStop();//run until the robot reaches the target
 }
 
 /*
   INSERT DESCRIPTION HERE, what are the inputs, what does it do, functions used
+
+  If direction is greater than zero, spin clockwise
+  If direction is less than zero, spin counterclockwise
 */
-void spin(int direction) {
+void spin(int direction) { //Currently overshoots sometimes
+  if (direction > 0) {
+    stepperRight.moveTo(-2000);
+    stepperLeft.moveTo(2000);
+  } else {
+    stepperRight.moveTo(2000);
+    stepperLeft.moveTo(-2000);
+  }
+  stepperRight.setSpeed(500);//set right motor speeda
+  stepperLeft.setSpeed(500);//set left motor speed
+  stepperRight.runSpeedToPosition();//move right motor
+  stepperLeft.runSpeedToPosition();//move left motor
+  runToStop();//run until the robot reaches the target
 }
 
 /*
   INSERT DESCRIPTION HERE, what are the inputs, what does it do, functions used
+  If input is greater than zero, turn right, else turn left
 */
 void turn(int direction) {
+  stepperRight.setCurrentPosition(0);
+  stepperLeft.setCurrentPosition(0);
+  if (direction > 0) {
+    stepperRight.moveTo(500);
+    stepperLeft.moveTo(1000);
+    stepperRight.setSpeed(250);//set right motor speed
+    stepperLeft.setSpeed(500);//set left motor speed
+    stepperRight.runSpeedToPosition();//move right motor
+     stepperLeft.runSpeedToPosition();//move left motor
+  } else {
+    stepperRight.moveTo(1000);
+    stepperLeft.moveTo(500);
+    stepperRight.setSpeed(500);//set right motor speed
+    stepperLeft.setSpeed(250);//set left motor speed
+    stepperRight.runSpeedToPosition();//move right motor
+     stepperLeft.runSpeedToPosition();//move left motor
+  }
+  runToStop();//run until the robot reaches the target
 }
 /*
   INSERT DESCRIPTION HERE, what are the inputs, what does it do, functions used
+  Moves Robot forward distance based on input
+  Input is in cm
 */
 void forward(int distance) {
+  float steps = distance * 29.9586;
+  Serial.print(steps);
+  stepperRight.moveTo(steps);//move one full rotation forward relative to current position
+  stepperLeft.moveTo(steps);//move one full rotation forward relative to current position
+  stepperRight.setSpeed(500);//set right motor speed
+  stepperLeft.setSpeed(500);//set left motor speed
+  stepperRight.runSpeedToPosition();//move right motor
+  stepperLeft.runSpeedToPosition();//move left motor
+  runToStop();//run until the robot reaches the target
 }
 /*
-  INSERT DESCRIPTION HERE, what are the inputs, what does it do, functions used
+  Moves Robot backwards distance based on input
+  Input is in cm
 */
 void reverse(int distance) {
+  float steps = distance * 29.9586;
+  Serial.print(steps);
+  stepperRight.moveTo(-steps);//move one full rotation forward relative to current position
+  stepperLeft.moveTo(-steps);//move one full rotation forward relative to current position
+  stepperRight.setSpeed(500);//set right motor speed
+  stepperLeft.setSpeed(500);//set left motor speed
+  stepperRight.runSpeedToPosition();//move right motor
+  stepperLeft.runSpeedToPosition();//move left motor
+  runToStop();//run until the robot reaches the target
 }
 /*
   INSERT DESCRIPTION HERE, what are the inputs, what does it do, functions used
+  Calls stop on both steppers
 */
 void stop() {
+  stepperRight.stop();
+  stepperLeft.stop();
 }
 
 
@@ -574,7 +648,7 @@ void loop()
 {
   //uncomment each function one at a time to see what the code does
   //move1();//call move back and forth function
-  move2();//call move back and forth function with AccelStepper library functions
+  //move2();//call move back and forth function with AccelStepper library functions
   //move3();//call move back and forth function with MultiStepper library functions
   //move4(); //move to target position with 2 different speeds
   //move5(); //move continuously with 2 different speeds
@@ -587,6 +661,12 @@ void loop()
 
   //Uncomment to Send and Receive with Bluetooth
   //Bluetooth_comm();
+  delay(5000);
+  //spin(1);
+  //pivot(1);
+  turn(1);
+  print_encoder_data();
 
   delay(wait_time);               //wait to move robot or read data
+  delay(30000); 
 }
