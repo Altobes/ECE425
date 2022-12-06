@@ -93,6 +93,9 @@ int pauseTime = 2500;   //time before robot moves
 int stepTime = 500;     //delay time between high and low on step pin
 int wait_time = 1000;   //delay for printing data
 
+float widthBot = 23.3; //cm
+
+
 //define encoder pins
 #define LEFT 0        //left encoder
 #define RIGHT 1       //right encoder
@@ -543,6 +546,51 @@ void spin(int direction) { //Currently overshoots sometimes
 void turn(int direction) {
   stepperRight.setCurrentPosition(0);
   stepperLeft.setCurrentPosition(0);
+  stepperLeft.setMaxSpeed(400);
+  stepperRight.setMaxSpeed(400);
+
+  float diam = 60.0;
+  float inner = 2.0 * 3.14 * ((diam/2.0) - widthBot/2.0) * (90.0/360.0);
+  float outer = 2.0 * 3.14 * ((diam/2.0) + widthBot/2.0) * (90.0/360.0);
+
+  Serial.println(inner);
+  Serial.println(outer);
+
+  int innerSteps = inner * 29.958;
+  int outerSteps = outer * 29.958;
+
+  float outerSpeed = 100;
+  float time = 1/(outerSpeed/outer);
+  float innerSpeed = inner/time;
+  //float innerSpeed = (250 * outer)/inner; //Works?
+  Serial.println(innerSteps);
+  Serial.println(outerSteps);
+  long positions[2]; // Array of desired stepper positions
+  
+  //delay(1000);//wait one second
+
+  if (direction > 0) {
+    positions[0] = innerSteps;//right motor absolute position
+    positions[1] = outerSteps;//left motor absolute position
+    steppers.moveTo(positions);
+    //stepperRight.moveTo(innerSteps);
+    //stepperLeft.moveTo(outerSteps);
+    //stepperRight.setSpeed(innerSpeed);//set right motor speed
+    //stepperLeft.setSpeed(outerSpeed);//set left motor speed
+  } else {
+    positions[0] = outerSteps;//right motor absolute position
+    positions[1] = innerSteps;//left motor absolute position
+    steppers.moveTo(positions);
+    //stepperRight.moveTo(outerSteps);
+    //stepperLeft.moveTo(innerSteps);
+    //stepperRight.setSpeed(outerSpeed);//set right motor speed
+    //stepperLeft.setSpeed(innerSpeed);//set left motor speed
+  }
+  steppers.runSpeedToPosition(); // Blocks until all are in position
+
+  /*
+  stepperRight.setCurrentPosition(0);
+  stepperLeft.setCurrentPosition(0);
   if (direction > 0) {
     stepperRight.moveTo(500);
     stepperLeft.moveTo(1000);
@@ -559,6 +607,7 @@ void turn(int direction) {
      stepperLeft.runSpeedToPosition();//move left motor
   }
   runToStop();//run until the robot reaches the target
+  */
 }
 /*
   INSERT DESCRIPTION HERE, what are the inputs, what does it do, functions used
@@ -567,6 +616,7 @@ void turn(int direction) {
 */
 void forward(int distance) {
   float steps = distance * 29.9586;
+  float ticks = steps * (40/800);
   Serial.print(steps);
   stepperRight.moveTo(steps);//move one full rotation forward relative to current position
   stepperLeft.moveTo(steps);//move one full rotation forward relative to current position
@@ -574,7 +624,32 @@ void forward(int distance) {
   stepperLeft.setSpeed(500);//set left motor speed
   stepperRight.runSpeedToPosition();//move right motor
   stepperLeft.runSpeedToPosition();//move left motor
+
   runToStop();//run until the robot reaches the target
+
+  int errorLeft;
+  int errorRight;
+  if (ltEncoder < ticks) {
+    errorLeft = ticks-ltEncoder;
+  }
+  if (rtEncoder < ticks) {
+    errorRight = ticks-rtEncoder;
+  }
+  if (rtEncoder < ticks) {
+    errorLeft = ticks-ltEncoder;
+  }
+
+  int correction = 40* max(errorLeft, errorRight);
+  stepperRight.setCurrentPosition(0);
+  stepperLeft.setCurrentPosition(0);
+  stepperRight.moveTo(correction);//move one full rotation forward relative to current position
+  stepperLeft.moveTo(correction);//move one full rotation forward relative to current position
+  stepperRight.setSpeed(250);//set right motor speed
+  stepperLeft.setSpeed(250);//set left motor speed
+  stepperRight.runSpeedToPosition();//move right motor
+  stepperLeft.runSpeedToPosition();//move left motor
+  runToStop();
+
 }
 /*
   Moves Robot backwards distance based on input
@@ -605,8 +680,51 @@ void stop() {
 
 /*
   INSERT DESCRIPTION HERE, what are the inputs, what does it do, functions used
+  If direction is greater than zero, spin clockwise
+  If direction is less than zero, spin counterclockwise
 */
 void moveCircle(int diam, int dir) {
+  stepperRight.setCurrentPosition(0);
+  stepperLeft.setCurrentPosition(0);
+  stepperLeft.setMaxSpeed(500);
+  stepperRight.setMaxSpeed(500);
+
+  float dist = 2 * 3.14 * (diam/2);
+  float inner = 2 * 3.14 * ((diam/2) - widthBot/2);
+  float outer = 2 * 3.14 * ((diam/2) + widthBot/2);
+
+  int innerSteps = inner * 29.958;
+  int outerSteps = outer * 29.958;
+  
+  Serial.print(innerSteps);
+  Serial.print(outerSteps);
+  long positions[2]; // Array of desired stepper positions
+  
+  //delay(1000);//wait one second
+
+  if (dir > 0) {
+    positions[0] = innerSteps;//right motor absolute position
+    positions[1] = outerSteps;//left motor absolute position
+    steppers.moveTo(positions);
+    //stepperRight.moveTo(innerSteps);
+    //stepperLeft.moveTo(outerSteps);
+    //stepperRight.setSpeed(innerSpeed);//set right motor speed
+    //stepperLeft.setSpeed(outerSpeed);//set left motor speed
+  } else {
+    positions[0] = outerSteps;//right motor absolute position
+    positions[1] = innerSteps;//left motor absolute position
+    steppers.moveTo(positions);
+    //stepperRight.moveTo(outerSteps);
+    //stepperLeft.moveTo(innerSteps);
+    //stepperRight.setSpeed(outerSpeed);//set right motor speed
+    //stepperLeft.setSpeed(innerSpeed);//set left motor speed
+  }
+  steppers.runSpeedToPosition(); // Blocks until all are in position
+  //runToStop();
+  //stepperRight.runSpeedToPosition();//move right motor
+  //stepperLeft.runSpeedToPosition();//move left motor
+  //runToStop();
+  
 }
 
 /*
@@ -614,6 +732,30 @@ void moveCircle(int diam, int dir) {
   twice with 2 different direcitons to create a figure 8 with circles of the given diameter.
 */
 void moveFigure8(int diam) {
+  float dist = 2 * 3.14 * (diam/2);
+  float inner = 2 * 3.14 * ((diam/2) - widthBot/2);
+  float outer = 2 * 3.14 * ((diam/2) + widthBot/2);
+
+  float innerSteps = inner * 29.958;
+  float outerSteps = outer * 29.958;
+  int innerTicks = innerSteps * 40;
+  int outerTicks = outerSteps * 40;
+
+  float outerSpeed = 250;
+  float time = 1/(outerSpeed/outer);
+  float innerSpeed = inner/time;
+
+  moveCircle(diam, -1);
+  int errorInner;
+  int errorOuter;
+  if (innerTicks < ltEncoder) {
+    errorInner = innerTicks - ltEncoder;
+  }
+  if (outerTicks < rtEncoder) {
+    errorOuter = outerTicks - rtEncoder;
+  }
+  
+  moveCircle(diam, 1);
 }
 
 
@@ -661,12 +803,22 @@ void loop()
 
   //Uncomment to Send and Receive with Bluetooth
   //Bluetooth_comm();
-  delay(5000);
-  //spin(1);
-  //pivot(1);
+  
+  delay(3000);
+  forward(30);
+  delay(1000);
+  reverse(30);
+  delay(1000);
+  spin(1);
+  delay(1000);
+  pivot(1);
+  delay(1000);
   turn(1);
+  
+  //moveCircle(100, 1);
+  
   print_encoder_data();
 
-  delay(wait_time);               //wait to move robot or read data
-  delay(30000); 
+  //delay(wait_time);               //wait to move robot or read data
+  delay(15000); 
 }
