@@ -1,67 +1,3 @@
-/*
-  NOTE:
-   THIS IS THE STANDARD FOR HOW TO PROPERLY COMMENT CODE
-   Header comment has program, name, author name, date created
-   Header comment has brief description of what program does
-   Header comment has list of key functions and variables created with decription
-   There are sufficient in line and block comments in the body of the program
-   Variables and functions have logical, intuitive names
-   Functions are used to improve modularity, clarity, and readability
-***********************************
-  RobotIntro.ino
-  Carlotta Berry 11.21.16
-
-  This program will introduce using the stepper motor library to create motion algorithms for the robot.
-  The motions will be go to angle, go to goal, move in a circle, square, figure eight and teleoperation (stop, forward, spin, reverse, turn)
-  It will also include wireless commmunication for remote control of the robot by using a game controller or serial monitor.
-  The primary functions created are
-  moveCircle - given the diameter in inches and direction of clockwise or counterclockwise, move the robot in a circle with that diameter
-  moveFigure8 - given the diameter in inches, use the moveCircle() function with direction input to create a Figure 8
-  forward, reverse - both wheels move with same velocity, same direction
-  pivot- one wheel stationary, one wheel moves forward or back
-  spin - both wheels move with same velocity opposite direction
-  turn - both wheels move with same direction different velocity
-  stop -both wheels stationary
-
-  Interrupts
-  https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/
-  https://www.arduino.cc/en/Tutorial/CurieTimer1Interrupt
-  https://playground.arduino.cc/code/timer1
-  https://playground.arduino.cc/Main/TimerPWMCheatsheet
-  http://arduinoinfo.mywikis.net/wiki/HOME
-
-  Hardware Connections:
-  Arduino pin mappings: https://www.arduino.cc/en/Hacking/PinMapping2560
-  A4988 Stepper Motor Driver Pinout: https://www.pololu.com/product/1182 
-
-  digital pin 48 - enable PIN on A4988 Stepper Motor Driver StepSTICK
-  digital pin 50 - right stepper motor step pin
-  digital pin 51 - right stepper motor direction pin
-  digital pin 52 - left stepper motor step pin
-  digital pin 53 - left stepper motor direction pin
-  digital pin 13 - enable LED on microcontroller
-
-  digital pin 6 - red LED in series with 220 ohm resistor
-  digital pin 7 - green LED in series with 220 ohm resistor
-  digital pin 8 - yellow LED in series with 220 ohm resistor
-
-  digital pin 18 - left encoder pin
-  digital pin 19 - right encoder pin
-
-  digital pin 2 - IMU INT
-  digital pin 20 - IMU SDA
-  digital pin 21 - IMU SCL
-
-
-  INSTALL THE LIBRARY
-  AccelStepper Library: https://www.airspayce.com/mikem/arduino/AccelStepper/
-  
-  Sketch->Include Library->Manage Libraries...->AccelStepper->Include
-  OR
-  Sketch->Include Library->Add .ZIP Library...->AccelStepper-1.53.zip
-  See PlatformIO documentation for proper way to install libraries in Visual Studio
-*/
-
 /**
  * Sum numbers in a vector.
  *
@@ -90,12 +26,51 @@
  *  |- README.md
  * 
  * Program Description:
+ *  This program will introduce using the stepper motor library to create motion algorithms for the robot.
+ *  The motions will be go to angle, go to goal, move in a circle, square, figure eight and teleoperation (stop, forward, spin, reverse, turn)
+ *  It will also include wireless commmunication for remote control of the robot by using a game controller or serial monitor.
  * 
  * Key Functions:
- * - 
- * Key Variables:
- * - 
+ *  moveCircle - given the diameter in inches and direction of clockwise or counterclockwise, move the robot in a circle with that diameter
+ *  moveFigure8 - given the diameter in inches, use the moveCircle() function with direction input to create a Figure 8
+ *  forward, reverse - both wheels move with same velocity, same direction
+ *  pivot - one wheel stationary, one wheel moves forward or back
+ *  spin - both wheels move with same velocity opposite direction
+ *  turn - both wheels move with same direction different velocity
+ *  stop - both wheels stationary
+ *  
+ * Hardware Connections:
+ *  Arduino pin mappings: https://www.arduino.cc/en/Hacking/PinMapping2560
  * 
+ *  A4988 Stepper Motor Driver Pinout: https://www.pololu.com/product/1182
+ *    digital pin 48 - enable PIN on A4988 Stepper Motor Driver StepSTICK
+ *    digital pin 50 - right stepper motor step pin
+ *    digital pin 51 - right stepper motor direction pin
+ *    digital pin 52 - left stepper motor step pin
+ *    digital pin 53 - left stepper motor direction pin
+ *    digital pin 13 - enable LED on microcontroller
+ * 
+ *  LED Pinout:
+ *    digital pin 6 - red LED in series with 220 ohm resistor
+ *    digital pin 7 - green LED in series with 220 ohm resistor
+ *    digital pin 8 - yellow LED in series with 220 ohm resistor
+ * 
+ *  Encoder Pinout:
+ *    digital pin 18 - left encoder pin
+ *    digital pin 19 - right encoder pin
+ * 
+ *  IMU Pinout:
+ *    digital pin 2 - IMU INT
+ *    digital pin 20 - IMU SDA
+ *    digital pin 21 - IMU SCL
+ * 
+ * Resources:
+ *  Interrupts:
+ *    https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/
+ *    https://www.arduino.cc/en/Tutorial/CurieTimer1Interrupt
+ *    https://playground.arduino.cc/code/timer1
+ *    https://playground.arduino.cc/Main/TimerPWMCheatsheet
+ *    http://arduinoinfo.mywikis.net/wiki/HOME
 */
 
 //includew all necessary libraries
