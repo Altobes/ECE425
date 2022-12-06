@@ -62,45 +62,71 @@
   See PlatformIO documentation for proper way to install libraries in Visual Studio
 */
 
+/**
+ * Author Names: Sal Altobellis & Chirag Sirigere
+ * Date Created: 12/2/2022
+ * Program Name: Walter_main.cpp
+ * Program Layout:
+ *  ECE425
+ *  |- .pio
+ *  |- .vscode
+ *  |- include
+ *  |- lib
+ *  |- src
+ *  |-- main.cpp
+ *  |- test
+ *  |- .gitignore
+ *  |- platformio.ini
+ *  |- README.md
+ * 
+ * Program Description:
+ * 
+ * Key Functions:
+ * - 
+ * Key Variables:
+ * - 
+ * 
+*/
+
 //includew all necessary libraries
-#include <Arduino.h>//include for PlatformIO Ide
-#include <AccelStepper.h>//include the stepper motor library
-#include <MultiStepper.h>//include multiple stepper motor library
-#include <Adafruit_MPU6050.h>//Include library for MPU6050 IMU
-#include <SoftwareSerial.h> //include Bluetooth module
+#include <Arduino.h>          //include for PlatformIO Ide
+#include <AccelStepper.h>     //include the stepper motor library
+#include <MultiStepper.h>     //include multiple stepper motor library
+#include <Adafruit_MPU6050.h> //Include library for MPU6050 IMU
+#include <SoftwareSerial.h>   //include Bluetooth module
 
 //state LEDs connections
-#define blueLED 5            //blue LED for displaying states
-#define grnLED 6            //green LED for displaying states
-#define ylwLED 7            //yellow LED for displaying states
-#define enableLED 13        //stepper enabled LED
+#define blueLED 5             //blue LED for displaying states
+#define grnLED 6              //green LED for displaying states
+#define ylwLED 7              //yellow LED for displaying states
+#define enableLED 13          //stepper enabled LED
 
 //define motor pin numbers
-#define stepperEnable 48    //stepper enable pin on stepStick 
-#define rtStepPin 50 //right stepper motor step pin 
-#define rtDirPin 51  // right stepper motor direction pin 
-#define ltStepPin 52 //left stepper motor step pin 
-#define ltDirPin 53  //left stepper motor direction pin 
+#define stepperEnable 48      //stepper enable pin on stepStick 
+#define rtStepPin 50          //right stepper motor step pin 
+#define rtDirPin 51           // right stepper motor direction pin 
+#define ltStepPin 52          //left stepper motor step pin 
+#define ltDirPin 53           //left stepper motor direction pin 
 
-AccelStepper stepperRight(AccelStepper::DRIVER, rtStepPin, rtDirPin);//create instance of right stepper motor object (2 driver pins, low to high transition step pin 52, direction input pin 53 (high means forward)
-AccelStepper stepperLeft(AccelStepper::DRIVER, ltStepPin, ltDirPin);//create instance of left stepper motor object (2 driver pins, step pin 50, direction input pin 51)
-MultiStepper steppers;//create instance to control multiple steppers at the same time
+AccelStepper stepperRight(AccelStepper::DRIVER, rtStepPin, rtDirPin); //create instance of right stepper motor object (2 driver pins, low to high transition step pin 52, direction input pin 53 (high means forward)
+AccelStepper stepperLeft(AccelStepper::DRIVER, ltStepPin, ltDirPin); //create instance of left stepper motor object (2 driver pins, step pin 50, direction input pin 51)
+MultiStepper steppers; //create instance to control multiple steppers at the same time
 
-#define stepperEnTrue false //variable for enabling stepper motor
-#define stepperEnFalse true //variable for disabling stepper motor
+#define stepperEnTrue false   //variable for enabling stepper motor
+#define stepperEnFalse true   //variable for disabling stepper motor
 
-int pauseTime = 2500;   //time before robot moves
-int stepTime = 500;     //delay time between high and low on step pin
-int wait_time = 1000;   //delay for printing data
+int pauseTime = 2500;         //time before robot moves
+int stepTime = 500;           //delay time between high and low on step pin
+int wait_time = 1000;         //delay for printing data
 
 float widthBot = 23.3; //cm
 
 
 //define encoder pins
-#define LEFT 0        //left encoder
-#define RIGHT 1       //right encoder
-const int ltEncoder = 18;        //left encoder pin (Mega Interrupt pins 2,3 18,19,20,21)
-const int rtEncoder = 19;        //right encoder pin (Mega Interrupt pins 2,3 18,19,20,21)
+#define LEFT 0                      //left encoder
+#define RIGHT 1                     //right encoder
+const int ltEncoder = 18;           //left encoder pin (Mega Interrupt pins 2,3 18,19,20,21)
+const int rtEncoder = 19;           //right encoder pin (Mega Interrupt pins 2,3 18,19,20,21)
 volatile long encoder[2] = {0, 0};  //interrupt variable to hold number of encoder counts (left, right)
 int lastSpeed[2] = {0, 0};          //variable to hold encoder speed (left, right)
 int accumTicks[2] = {0, 0};         //variable to hold accumulated ticks since last reset
@@ -109,30 +135,39 @@ int accumTicks[2] = {0, 0};         //variable to hold accumulated ticks since l
 Adafruit_MPU6050 mpu;
 
 //Bluetooth module connections
-#define BTTX 10 // TX on chip to pin 10 on Arduino Mega
-#define BTRX 11 //, RX on chip to pin 11 on Arduino Mega
+#define BTTX 10               // TX on chip to pin 10 on Arduino Mega
+#define BTRX 11               // RX on chip to pin 11 on Arduino Mega
 SoftwareSerial BTSerial(BTTX, BTRX);
 
 // Helper Functions
-
-//interrupt function to count left encoder tickes
+/**
+ * Interrupt function to count left encoder ticks.
+ */
 void LwheelSpeed()
 {
   encoder[LEFT] ++;  //count the left wheel encoder interrupts
 }
 
-//interrupt function to count right encoder ticks
+/**
+ * Interrupt function to count right encoder ticks
+ */
 void RwheelSpeed()
 {
   encoder[RIGHT] ++; //count the right wheel encoder interrupts
 }
 
-//function to initialize Bluetooth
+// Initialization Functions
+/**
+ * Function to initialize Bluetooth
+ */
 void init_BT(){
   Serial.println("Goodnight moon!");
   BTSerial.println("Hello, world?");
 }
-//function to initialize IMU
+
+/**
+ * Function to initialize IMU
+ */
 void init_IMU(){
   Serial.println("Adafruit MPU6050 init!");
 
