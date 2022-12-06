@@ -70,7 +70,7 @@
 #include <SoftwareSerial.h> //include Bluetooth module
 
 //state LEDs connections
-#define redLED 5            //red LED for displaying states
+#define blueLED 5            //blue LED for displaying states
 #define grnLED 6            //green LED for displaying states
 #define ylwLED 7            //yellow LED for displaying states
 #define enableLED 13        //stepper enabled LED
@@ -215,14 +215,14 @@ void init_stepper(){
   digitalWrite(stepperEnable, stepperEnFalse);//turns off the stepper motor driver
   pinMode(enableLED, OUTPUT);//set enable LED as output
   digitalWrite(enableLED, LOW);//turn off enable LED
-  pinMode(redLED, OUTPUT);//set red LED as output
+  pinMode(blueLED, OUTPUT);//set red LED as output
   pinMode(grnLED, OUTPUT);//set green LED as output
   pinMode(ylwLED, OUTPUT);//set yellow LED as output
-  digitalWrite(redLED, HIGH);//turn on red LED
+  digitalWrite(blueLED, HIGH);//turn on red LED
   digitalWrite(ylwLED, HIGH);//turn on yellow LED
   digitalWrite(grnLED, HIGH);//turn on green LED
   delay(pauseTime / 5); //wait 0.5 seconds
-  digitalWrite(redLED, LOW);//turn off red LED
+  digitalWrite(blueLED, LOW);//turn off red LED
   digitalWrite(ylwLED, LOW);//turn off yellow LED
   digitalWrite(grnLED, LOW);//turn off green LED
 
@@ -362,7 +362,7 @@ void runToStop ( void ) {
    the length of the delay.
 */
 void move1() {
-  digitalWrite(redLED, HIGH);//turn on red LED
+  digitalWrite(blueLED, HIGH);//turn on red LED
   digitalWrite(grnLED, LOW);//turn off green LED
   digitalWrite(ylwLED, LOW);//turn off yellow LED
   digitalWrite(ltDirPin, HIGH); // Enables the motor to move in a particular direction
@@ -403,7 +403,7 @@ void move1() {
    runToNewPosition() is a library function that uses blocking with accel/decel to achieve target posiiton
 */
 void move2() {
-  digitalWrite(redLED, LOW);//turn off red LED
+  digitalWrite(blueLED, LOW);//turn off red LED
   digitalWrite(grnLED, HIGH);//turn on green LED
   digitalWrite(ylwLED, LOW);//turn off yellow LED
   stepperRight.moveTo(800);//move one full rotation forward relative to current position
@@ -436,7 +436,7 @@ void move2() {
    runToNewPosition() is a library function that uses blocking with accel/decel to achieve target posiiton
 */
 void move3() {
-  digitalWrite(redLED, LOW);//turn off red LED
+  digitalWrite(blueLED, LOW);//turn off red LED
   digitalWrite(grnLED, LOW);//turn off green LED
   digitalWrite(ylwLED, HIGH);//turn on yellow LED
   long positions[2]; // Array of desired stepper positions
@@ -461,7 +461,7 @@ void move4() {
   int leftSpd = 5000;//right motor speed
   int rightSpd = 1000; //left motor speed
 
-  digitalWrite(redLED, HIGH);//turn on red LED
+  digitalWrite(blueLED, HIGH);//turn on red LED
   digitalWrite(grnLED, HIGH);//turn on green LED
   digitalWrite(ylwLED, LOW);//turn off yellow LED
 
@@ -483,7 +483,7 @@ void move4() {
 
 /*This function will move continuously at 2 different speeds*/
 void move5() {
-  digitalWrite(redLED, LOW);//turn off red LED
+  digitalWrite(blueLED, LOW);//turn off red LED
   digitalWrite(grnLED, HIGH);//turn on green LED
   digitalWrite(ylwLED, HIGH);//turn on yellow LED
   int leftSpd = 5000;//right motor speed
@@ -682,22 +682,26 @@ void stop() {
   INSERT DESCRIPTION HERE, what are the inputs, what does it do, functions used
   If direction is greater than zero, spin clockwise
   If direction is less than zero, spin counterclockwise
+  //Blue Led
 */
 void moveCircle(int diam, int dir) {
+  digitalWrite(blueLED, HIGH);//turn off red LED
   stepperRight.setCurrentPosition(0);
   stepperLeft.setCurrentPosition(0);
   stepperLeft.setMaxSpeed(500);
   stepperRight.setMaxSpeed(500);
 
   float dist = 2 * 3.14 * (diam/2);
-  float inner = 2 * 3.14 * ((diam/2) - widthBot/2);
-  float outer = 2 * 3.14 * ((diam/2) + widthBot/2);
+  float inner = 2 * 3.14 * ((diam/2) - widthBot/2) * 0.9;
+  float outer = 2 * 3.14 * ((diam/2) + widthBot/2) * 0.9;
 
   int innerSteps = inner * 29.958;
   int outerSteps = outer * 29.958;
   
-  Serial.print(innerSteps);
-  Serial.print(outerSteps);
+  Serial.println(innerSteps);
+  Serial.println(outerSteps);
+  Serial.println(outerSteps*(40.0/800.0));
+  Serial.println(innerSteps*(40.0/800.0));
   long positions[2]; // Array of desired stepper positions
   
   //delay(1000);//wait one second
@@ -724,17 +728,21 @@ void moveCircle(int diam, int dir) {
   //stepperRight.runSpeedToPosition();//move right motor
   //stepperLeft.runSpeedToPosition();//move left motor
   //runToStop();
-  
+  digitalWrite(blueLED, LOW);//turn off red LED
 }
 
 /*
   The moveFigure8() function takes the diameter in inches as the input. It uses the moveCircle() function
   twice with 2 different direcitons to create a figure 8 with circles of the given diameter.
+  Blue and Yellow
 */
 void moveFigure8(int diam) {
+  digitalWrite(blueLED, HIGH);//turn off red LED
+  digitalWrite(ylwLED, HIGH);//turn on yellow LED
+
   float dist = 2 * 3.14 * (diam/2);
-  float inner = 2 * 3.14 * ((diam/2) - widthBot/2);
-  float outer = 2 * 3.14 * ((diam/2) + widthBot/2);
+  float inner = 2 * 3.14 * ((diam/2) - widthBot/2) * 0.9;
+  float outer = 2 * 3.14 * ((diam/2) + widthBot/2) * 0.9;
 
   float innerSteps = inner * 29.958;
   float outerSteps = outer * 29.958;
@@ -756,6 +764,8 @@ void moveFigure8(int diam) {
   }
   
   moveCircle(diam, 1);
+  digitalWrite(blueLED, LOW);//turn off red LED
+  digitalWrite(ylwLED, LOW);//turn on yellow LED
 }
 
 
@@ -803,7 +813,7 @@ void loop()
 
   //Uncomment to Send and Receive with Bluetooth
   //Bluetooth_comm();
-  
+  /*
   delay(3000);
   forward(30);
   delay(1000);
@@ -814,8 +824,10 @@ void loop()
   pivot(1);
   delay(1000);
   turn(1);
-  
-  //moveCircle(100, 1);
+  */
+  moveCircle(100, 1);
+  delay(1000);
+  moveFigure8(100);
   
   print_encoder_data();
 
