@@ -63,6 +63,16 @@
 */
 
 /**
+ * Sum numbers in a vector.
+ *
+ * This sum is the arithmetic sum, not some other kind of sum that only
+ * mathematicians have heard of.
+ *
+ * @param values Container whose values are summed.
+ * @return sum of `values`, or 0.0 if `values` is empty.
+ */
+
+/**
  * Author Names: Sal Altobellis & Chirag Sirigere
  * Date Created: 12/2/2022
  * Program Name: Walter_main.cpp
