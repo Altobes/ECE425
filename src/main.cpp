@@ -38,6 +38,16 @@
  *  spin - both wheels move with same velocity opposite direction
  *  turn - both wheels move with same direction different velocity
  *  stop - both wheels stationary
+ * 
+ *  Library Functions:
+ *    move() is a library function for relative movement to set a target position
+ *    moveTo() is a library function for absolute movement to set a target position
+ *    stop() is a library function that causes the stepper to stop as quickly as possible
+ *    run() is a library function that uses accel and decel to achieve target position, no blocking
+ *    runSpeed() is a library function that uses constant speed to achieve target position, no blocking
+ *    runToPosition() is a library function that uses blocking with accel/decel to achieve target position
+ *    runSpeedToPosition() is a library function that uses constant speed to achieve target posiiton, no blocking
+ *    runToNewPosition() is a library function that uses blocking with accel/decel to achieve target posiiton
  *  
  * Hardware Connections:
  *  Arduino pin mappings: https://www.arduino.cc/en/Hacking/PinMapping2560
@@ -106,7 +116,6 @@ int wait_time = 1000;         //delay for printing data
 
 float widthBot = 23.3; //cm
 
-
 //define encoder pins
 #define LEFT 0                      //left encoder
 #define RIGHT 1                     //right encoder
@@ -123,23 +132,6 @@ Adafruit_MPU6050 mpu;
 #define BTTX 10               // TX on chip to pin 10 on Arduino Mega
 #define BTRX 11               // RX on chip to pin 11 on Arduino Mega
 SoftwareSerial BTSerial(BTTX, BTRX);
-
-// Helper Functions
-/**
- * Interrupt function to count left encoder ticks.
- */
-void LwheelSpeed()
-{
-  encoder[LEFT] ++;  //count the left wheel encoder interrupts
-}
-
-/**
- * Interrupt function to count right encoder ticks
- */
-void RwheelSpeed()
-{
-  encoder[RIGHT] ++; //count the right wheel encoder interrupts
-}
 
 // Initialization Functions
 /**
@@ -225,7 +217,9 @@ void init_IMU(){
   }
 }
 
-//function to set all stepper motor variables, outputs and LEDs
+/**
+ * Function to set all stepper motor variables, outputs and LEDs
+ */
 void init_stepper(){
   pinMode(rtStepPin, OUTPUT);//sets pin as output
   pinMode(rtDirPin, OUTPUT);//sets pin as output
@@ -256,7 +250,26 @@ void init_stepper(){
   digitalWrite(enableLED, HIGH);//turn on enable LED
 }
 
-//function prints encoder data to serial monitor
+// Helper Functions
+/**
+ * Interrupt function to count left encoder ticks.
+ */
+void LwheelSpeed()
+{
+  encoder[LEFT] ++;  //count the left wheel encoder interrupts
+}
+
+/**
+ * Interrupt function to count right encoder ticks
+ */
+void RwheelSpeed()
+{
+  encoder[RIGHT] ++; //count the right wheel encoder interrupts
+}
+
+/**
+ * Function prints encoder data to serial monitor
+ */
 void print_encoder_data() {
   static unsigned long timer = 0;                           //print manager timer
   if (millis() - timer > 100) {                             //print encoder data every 100 ms or so
@@ -280,7 +293,9 @@ void print_encoder_data() {
   }
 }
 
-//function to print IMU data to the serial monitor
+/**
+ * Function to print IMU data to the serial monitor
+ */
 void print_IMU_data(){
     /* Get new sensor events with the readings */
   sensors_event_t a, g, temp;
@@ -310,7 +325,9 @@ void print_IMU_data(){
   Serial.println("");
 }
 
-//function to send and receive data with the Bluetooth
+/**
+ * Function to send and receive data with the Bluetooth
+ */
 void Bluetooth_comm(){
   String data="";
   if (Serial.available()) {
@@ -337,23 +354,26 @@ void Bluetooth_comm(){
     BTSerial.println(data);
   }
 }
-  
-  
-/*function to run both wheels to a position at speed*/
+
+/**
+ * Function to run both wheels to a position at speed
+ */
 void runAtSpeedToPosition() {
   stepperRight.runSpeedToPosition();
   stepperLeft.runSpeedToPosition();
 }
 
-/*function to run both wheels continuously at a speed*/
+/**
+ * Function to run both wheels continuously at a speed
+ */
 void runAtSpeed ( void ) {
   while (stepperRight.runSpeed() || stepperLeft.runSpeed()) {
   }
 }
 
-/*This function, runToStop(), will run the robot until the target is achieved and
-   then stop it
-*/
+/**
+ * Function run the robot until the target is achieved and then stop it
+ */
 void runToStop ( void ) {
   int runNow = 1;
   int rightStopped = 0;
@@ -362,11 +382,11 @@ void runToStop ( void ) {
   while (runNow) {
     if (!stepperRight.run()) {
       rightStopped = 1;
-      stepperRight.stop();//stop right motor
+      stepperRight.stop(); //stop right motor
     }
     if (!stepperLeft.run()) {
       leftStopped = 1;
-      stepperLeft.stop();//stop ledt motor
+      stepperLeft.stop(); //stop ledt motor
     }
     if (rightStopped && leftStopped) {
       runNow = 0;
@@ -375,11 +395,13 @@ void runToStop ( void ) {
 }
 
 
-/*
-   The move1() function will move the robot forward one full rotation and backwared on
-   full rotation.  Recall that that there 200 steps in one full rotation or 1.8 degrees per
-   step. This function uses setting the step pins high and low with delays to move. The speed is set by
-   the length of the delay.
+
+// Move Functions
+/**
+ * The move1() function will move the robot forward one full rotation and backwared on full rotation.
+ * Recall that that there 200 steps in one full rotation or 1.8 degrees per step.
+ * This function uses setting the step pins high and low with delays to move.
+ * The speed is set by the length of the delay.
 */
 void move1() {
   digitalWrite(blueLED, HIGH);//turn on red LED
@@ -411,16 +433,8 @@ void move1() {
   delay(1000); // One second delay
 }
 
-/*
-   The move2() function will use AccelStepper library functions to move the robot
-   move() is a library function for relative movement to set a target position
-   moveTo() is a library function for absolute movement to set a target position
-   stop() is a library function that causes the stepper to stop as quickly as possible
-   run() is a library function that uses accel and decel to achieve target position, no blocking
-   runSpeed() is a library function that uses constant speed to achieve target position, no blocking
-   runToPosition() is a library function that uses blocking with accel/decel to achieve target position
-   runSpeedToPosition() is a library function that uses constant speed to achieve target posiiton, no blocking
-   runToNewPosition() is a library function that uses blocking with accel/decel to achieve target posiiton
+/**
+ * The move2() function will use AccelStepper library functions to move the robot
 */
 void move2() {
   digitalWrite(blueLED, LOW);//turn off red LED
@@ -444,16 +458,8 @@ void move2() {
   delay(1000); // One second delay
 }
 
-/*
-   The move3() function will use the MultiStepper() class to move both motors at once
-   move() is a library function for relative movement to set a target position
-   moveTo() is a library function for absolute movement to set a target position
-   stop() is a library function that causes the stepper to stop as quickly as possible
-   run() is a library function that uses accel and decel to achieve target position, no blocking
-   runSpeed() is a library function that uses constant speed to achieve target position, no blocking
-   runToPosition() is a library function that uses blocking with accel/decel to achieve target position
-   runSpeedToPosition() is a library function that uses constant speed to achieve target posiiton, no blocking
-   runToNewPosition() is a library function that uses blocking with accel/decel to achieve target posiiton
+/**
+ * The move3() function will use the MultiStepper() class to move both motors at once
 */
 void move3() {
   digitalWrite(blueLED, LOW);//turn off red LED
@@ -473,7 +479,9 @@ void move3() {
   delay(1000);//wait one second
 }
 
-/*this function will move to target at 2 different speeds*/
+/**
+ * This function will move to target at 2 different speeds
+*/
 void move4() {
 
   int leftPos = 5000;//right motor absolute position
@@ -501,7 +509,9 @@ void move4() {
   runAtSpeedToPosition();//run at speed to target position
 }
 
-/*This function will move continuously at 2 different speeds*/
+/**
+ * This function will move continuously at 2 different speeds
+*/
 void move5() {
   digitalWrite(blueLED, LOW);//turn off red LED
   digitalWrite(grnLED, HIGH);//turn on green LED
@@ -516,13 +526,12 @@ void move5() {
 
 
 
-/*
-  INSERT DESCRIPTION HERE, what are the inputs, what does it do, functions used
 
-  If direction is greater than zero, pivot clockwise
-  If direction is less than zero, pivot counterclockwise
-  currently set to 90 degrees
-*/
+/**
+ * This function pivots the robot in one direction 90 degrees.
+ * 
+ * @param direction A positive value to pivot clockwise or a negative value to pivot counterclockwise
+ */
 void pivot(int direction) {
   stepperRight.setCurrentPosition(0);
   stepperLeft.setCurrentPosition(0);
@@ -538,12 +547,11 @@ void pivot(int direction) {
   runToStop();//run until the robot reaches the target
 }
 
-/*
-  INSERT DESCRIPTION HERE, what are the inputs, what does it do, functions used
-
-  If direction is greater than zero, spin clockwise
-  If direction is less than zero, spin counterclockwise
-*/
+/**
+ * This function spins the robot in one direction.
+ * 
+ * @param direction A positive value to spin clockwise or a negative value to spin counterclockwise
+ */
 void spin(int direction) { //Currently overshoots sometimes
   if (direction > 0) {
     stepperRight.moveTo(-2000);
@@ -559,10 +567,11 @@ void spin(int direction) { //Currently overshoots sometimes
   runToStop();//run until the robot reaches the target
 }
 
-/*
-  INSERT DESCRIPTION HERE, what are the inputs, what does it do, functions used
-  If input is greater than zero, turn right, else turn left
-*/
+/**
+ * This function turns the robot in one direction.
+ * 
+ * @param direction A positive value to turn right or a negative value to turn left
+ */
 void turn(int direction) {
   stepperRight.setCurrentPosition(0);
   stepperLeft.setCurrentPosition(0);
@@ -629,10 +638,11 @@ void turn(int direction) {
   runToStop();//run until the robot reaches the target
   */
 }
-/*
-  INSERT DESCRIPTION HERE, what are the inputs, what does it do, functions used
-  Moves Robot forward distance based on input
-  Input is in cm
+
+/**
+ * Moves robot forward a distance based on the distance input.
+ * 
+ * @param distance A value in centimeters
 */
 void forward(int distance) {
   float steps = distance * 29.9586;
@@ -669,11 +679,12 @@ void forward(int distance) {
   stepperRight.runSpeedToPosition();//move right motor
   stepperLeft.runSpeedToPosition();//move left motor
   runToStop();
-
 }
-/*
-  Moves Robot backwards distance based on input
-  Input is in cm
+
+/**
+ * Moves robot backward a distance based on the distance input.
+ * 
+ * @param distance A value in centimeters
 */
 void reverse(int distance) {
   float steps = distance * 29.9586;
@@ -686,9 +697,9 @@ void reverse(int distance) {
   stepperLeft.runSpeedToPosition();//move left motor
   runToStop();//run until the robot reaches the target
 }
-/*
-  INSERT DESCRIPTION HERE, what are the inputs, what does it do, functions used
-  Calls stop on both steppers
+
+/**
+ * Stops both stepper motors
 */
 void stop() {
   stepperRight.stop();
@@ -698,11 +709,13 @@ void stop() {
 
 
 
-/*
-  INSERT DESCRIPTION HERE, what are the inputs, what does it do, functions used
-  If direction is greater than zero, spin clockwise
-  If direction is less than zero, spin counterclockwise
-  //Blue Led
+
+/**
+ * Moves the robot in a specified direction in a circle of a given diameter
+ * 
+ * @param diam the diameter of the circle in inches
+ * @param dir A positive value to turn right or a negative value to turn left
+ * 
 */
 void moveCircle(int diam, int dir) {
   digitalWrite(blueLED, HIGH);//turn off red LED
@@ -751,10 +764,11 @@ void moveCircle(int diam, int dir) {
   digitalWrite(blueLED, LOW);//turn off red LED
 }
 
-/*
-  The moveFigure8() function takes the diameter in inches as the input. It uses the moveCircle() function
-  twice with 2 different direcitons to create a figure 8 with circles of the given diameter.
-  Blue and Yellow
+/**
+ * The moveFigure8() function takes the diameter in inches as the input.
+ * It uses the moveCircle() function twice with 2 different direcitons to create a figure 8 with circles of the given diameter.
+ * 
+ * @param diam the diameter in inches
 */
 void moveFigure8(int diam) {
   digitalWrite(blueLED, HIGH);//turn off red LED
@@ -784,8 +798,8 @@ void moveFigure8(int diam) {
   }
   
   moveCircle(diam, 1);
-  digitalWrite(blueLED, LOW);//turn off red LED
-  digitalWrite(ylwLED, LOW);//turn on yellow LED
+  digitalWrite(blueLED, LOW); //turn off red LED
+  digitalWrite(ylwLED, LOW); //turn on yellow LED
 }
 
 
