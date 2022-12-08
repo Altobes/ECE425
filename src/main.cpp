@@ -555,6 +555,7 @@ void move5() {
 // Lab 1 Demonstration Functions
 /**
  * This function pivots the robot in one direction 90 degrees.
+ * The robot has one wheel not moving while the other wheel moves to pivot.
  * 
  * @param direction A positive value to pivot clockwise or a negative value to pivot counterclockwise
  */
@@ -574,7 +575,7 @@ void pivot(int direction) {
 }
 
 /**
- * This function spins the robot in one direction.
+ * This function spins the robot in one direction 360 degrees.
  * 
  * @param direction A positive value to spin clockwise or a negative value to spin counterclockwise
  */
@@ -594,17 +595,36 @@ void spin(int direction) { //Currently overshoots sometimes
 }
 
 /**
- * This function turns the robot in one direction.
+ * This function turns the robot forward a quarter circle with a given radius in one direction.
  * 
- * @param direction A positive value to turn right or a negative value to turn left
+ * @param radius A turning radius in centimeters. A radius of 0 spins the robot in the clockwise direction 90 degrees (similar to calling spin() a quarter circle).
+ * @param turnDirection An array of direction values
+ *                        position 0: a forward [0] or reverse [1] turn
+ *                        position 1: a left [0] or right [1] turn
  */
-void turn(int direction) {
+void turn(float radius, bool turnDirection[2]) {
+  /*
+    seems to me that once a radius is given, the robot doesn't make the exact radius turn.
+    Steps I took:
+      1. I input a 15cm CW turn
+      2. Measure 15cm out from the center of the wheel
+      3. Start the robot, call the turn function, and stop the robot
+      5. Attempt to measure 15cm out from the center of the wheel
+      6. The robot is off by exactly 1.5cm
+      7. The robot is also crooked and isn't completing the turn properly
+    
+    Possible Solutions:
+      1. A proportional gain must be placed to counter the error
+      2. Count how many ticks are required for the robot to move forward and then turn
+      3. Have outer turn proportionally less than inner
+  */
+
   stepperRight.setCurrentPosition(0);
   stepperLeft.setCurrentPosition(0);
   stepperLeft.setMaxSpeed(400);
   stepperRight.setMaxSpeed(400);
 
-  float diam = 60.0;
+  float diam = 60.0*radius/18;
   float inner = 2.0 * 3.14 * ((diam/2.0) - WIDTH_BOT/2.0) * (90.0/360.0);
   float outer = 2.0 * 3.14 * ((diam/2.0) + WIDTH_BOT/2.0) * (90.0/360.0);
 
@@ -614,17 +634,17 @@ void turn(int direction) {
   int innerSteps = inner * 29.958;
   int outerSteps = outer * 29.958;
 
-  float outerSpeed = 100;
-  float time = 1/(outerSpeed/outer);
-  float innerSpeed = inner/time;
+  //float outerSpeed = 100;
+  //float time = 1/(outerSpeed/outer);
+  //float innerSpeed = inner/time;
   //float innerSpeed = (250 * outer)/inner; //Works?
-  Serial.println(innerSteps);
-  Serial.println(outerSteps);
+  //Serial.println(innerSteps);
+  //Serial.println(outerSteps);
   long positions[2]; // Array of desired stepper positions
   
   //delay(1000); //wait one second
 
-  if (direction > 0) {
+  if (turnDirection[1] > 0) {
     positions[0] = innerSteps; //right motor absolute position
     positions[1] = outerSteps; //left motor absolute position
     steppers.moveTo(positions);
@@ -823,6 +843,39 @@ void moveFigure8(int diam) {
   digitalWrite(ylwLED, LOW); //turn on yellow LED
 }
 
+/**
+ * 
+*/
+void goToAngle(float angle) {
+  digitalWrite(blueLED, LOW); //turn off red LED
+  digitalWrite(grnLED, HIGH); //turn on green LED
+  digitalWrite(ylwLED, LOW); //turn off yellow LED
+
+
+}
+
+/**
+ * 
+*/
+void goToGoal(float x, float y) {
+  digitalWrite(blueLED, LOW); //turn off red LED
+  digitalWrite(grnLED, HIGH); //turn on green LED
+  digitalWrite(ylwLED, HIGH); //turn on yellow LED
+
+
+}
+
+/**
+ * 
+*/
+void moveSquare(float sideLength) {
+  digitalWrite(blueLED, HIGH); //turn on red LED
+  digitalWrite(grnLED, HIGH); //turn on green LED
+  digitalWrite(ylwLED, HIGH); //turn on yellow LED
+
+
+}
+
 //// MAIN
 void setup()
 {
@@ -855,7 +908,7 @@ void loop()
   //move1(); //call move back and forth function
   //move2(); //call move back and forth function with AccelStepper library functions
   //move3(); //call move back and forth function with MultiStepper library functions
-  move4(); //move to target position with 2 different speeds
+  //move4(); //move to target position with 2 different speeds
   //move5(); //move continuously with 2 different speeds
 
   //Uncomment to read Encoder Data (uncomment to read on serial monitor)
@@ -878,6 +931,11 @@ void loop()
   delay(1000);
   turn(1);
   */
+  
+  //pivot(1);
+  //spin(1);
+  bool dir[2] = {1,1};
+  turn(15, dir);
 
   /*
   moveCircle(100, 1);
@@ -888,5 +946,5 @@ void loop()
   //print_encoder_data();
 
   //delay(wait_time);               //wait to move robot or read data
-  //delay(WAIT_TIME); 
+  delay(WAIT_TIME); 
 }
