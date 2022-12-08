@@ -116,8 +116,8 @@ const unsigned short WAIT_TIME = 15000;         //delay for printing data
 const float FULL_REV = 800.0;                   //A4988 Stepper Motor Driver quarter step ticks for full revolution of wheel
 
 const float WIDTH_BOT = 23.3; //cm
-const float RADIUS_BOT = 4.25; //cm
-const float STEPS_TO_CM = 29.9586; 
+const float RADIUS_BOT = 11.7; //cm
+const float CM_TO_STEPS = 29.9586; 
 const float TICKS_TO_STEPS = 1/20;
 const float STEPS_TO_TICKS = 20;
 
@@ -855,8 +855,39 @@ void goToAngle(float angle) {
   digitalWrite(blueLED, LOW); //turn off red LED
   digitalWrite(grnLED, HIGH); //turn on green LED
   digitalWrite(ylwLED, LOW); //turn off yellow LED
+  float arclength = 2.0 * 3.1415 * RADIUS_BOT * (angle/360.0);
+  Serial.println(arclength);
+  int steps = arclength * CM_TO_STEPS;
+  int ticks = steps * STEPS_TO_TICKS;
 
+  stepperRight.moveTo(-steps);
+  stepperLeft.moveTo(steps);
 
+  Serial.println(steps);
+
+  stepperRight.setMaxSpeed(500); //set right motor speeda
+  stepperLeft.setMaxSpeed(500); //set left motor speed
+  stepperRight.runSpeedToPosition(); //move right motor
+  stepperLeft.runSpeedToPosition(); //move left motor
+  runToStop();
+  
+  int errorLeft = ticks - ltEncoder;
+  int errorRight = ticks - rtEncoder;
+  Serial.println(errorLeft);
+  Serial.println(errorRight);
+
+  int correctStepsLeft = errorLeft * TICKS_TO_STEPS;
+  int correctStepsRight = errorRight * TICKS_TO_STEPS;
+
+  stepperRight.setCurrentPosition(0);
+  stepperLeft.setCurrentPosition(0);
+
+  stepperRight.moveTo(-correctStepsRight);
+  stepperLeft.moveTo(correctStepsLeft);
+  stepperRight.runSpeedToPosition(); //move right motor
+  stepperLeft.runSpeedToPosition(); //move left motor
+
+  runToStop(); //run until the robot reaches the target
 }
 
 /**
@@ -940,14 +971,9 @@ void loop()
   //pivot(1);
   //spin(1);
   bool dir[2] = {1,1};
-  turn(15, dir);
-
-  /*
-  moveCircle(100, 1);
-  delay(1000);
-  moveFigure8(100);
-  */
-  
+  //turn(15, dir);
+  delay(3000);
+  goToAngle(90);
   //print_encoder_data();
 
   //delay(wait_time);               //wait to move robot or read data
