@@ -816,8 +816,7 @@ void goToAngle(float angle) {
 
   Serial.println("Steps: " + steps);
 
-  stepperRight.setMaxSpeed(500); //set right motor speeda
-  stepperLeft.setMaxSpeed(500); //set left motor speed
+  setBothStepperSpeed(500, 500); //set motor speeds
   stepperRight.runSpeedToPosition(); //move right motor
   stepperLeft.runSpeedToPosition(); //move left motor
   runToStop();
@@ -832,8 +831,7 @@ void goToAngle(float angle) {
   int correctStepsLeft = errorLeft * TICKS_TO_STEPS;
   int correctStepsRight = errorRight * TICKS_TO_STEPS;
 
-  stepperRight.setCurrentPosition(0);
-  stepperLeft.setCurrentPosition(0);
+  setBothStepperCurrentPosition(0, 0); //reset stepper positions
 
   stepperRight.moveTo(-correctStepsRight);
   stepperLeft.moveTo(correctStepsLeft);
