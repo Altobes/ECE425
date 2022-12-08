@@ -94,6 +94,10 @@ int stepTime = 500;     //delay time between high and low on step pin
 int wait_time = 1000;   //delay for printing data
 
 float widthBot = 23.3; //cm
+float radiusBot = 4.25; //cm
+float stepsToCM = 29.9586;
+float ticksToSteps = 1/40;
+float StepsToTicks = 40;
 
 
 //define encoder pins
