@@ -828,18 +828,19 @@ void moveFigure8(int diam) {
  * 
 */
 void goToAngle(float angle) {
+  int initialLeftTicks = ltEncoder;
+  int initialRightTicks = rtEncoder;
   digitalWrite(blueLED, LOW); //turn off red LED
   digitalWrite(grnLED, HIGH); //turn on green LED
   digitalWrite(ylwLED, LOW); //turn off yellow LED
   float arclength = 2.0 * 3.1415 * RADIUS_BOT * (angle/360.0);
-  Serial.println(arclength);
   int steps = arclength * CM_TO_STEPS;
   int ticks = steps * STEPS_TO_TICKS;
 
   stepperRight.moveTo(-steps);
   stepperLeft.moveTo(steps);
 
-  Serial.println(steps);
+  Serial.println("Steps: " + steps);
 
   stepperRight.setMaxSpeed(500); //set right motor speeda
   stepperLeft.setMaxSpeed(500); //set left motor speed
@@ -847,10 +848,12 @@ void goToAngle(float angle) {
   stepperLeft.runSpeedToPosition(); //move left motor
   runToStop();
   
-  int errorLeft = ticks - ltEncoder;
-  int errorRight = ticks - rtEncoder;
-  Serial.println(errorLeft);
-  Serial.println(errorRight);
+  Serial.println(ltEncoder);
+  Serial.println(rtEncoder);
+  int errorLeft = (ticks + initialLeftTicks) - ltEncoder;
+  int errorRight = (ticks + initialRightTicks) - rtEncoder;
+  Serial.println("Error Left: " + errorLeft);
+  Serial.println("Error Right: " + errorRight);
 
   int correctStepsLeft = errorLeft * TICKS_TO_STEPS;
   int correctStepsRight = errorRight * TICKS_TO_STEPS;
