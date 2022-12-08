@@ -634,55 +634,31 @@ void turn(float radius, bool turnDirection[2]) {
   int innerSteps = inner * 29.958;
   int outerSteps = outer * 29.958;
 
-  //float outerSpeed = 100;
-  //float time = 1/(outerSpeed/outer);
-  //float innerSpeed = inner/time;
-  //float innerSpeed = (250 * outer)/inner; //Works?
-  //Serial.println(innerSteps);
-  //Serial.println(outerSteps);
   long positions[2]; // Array of desired stepper positions
   
-  //delay(1000); //wait one second
-
-  if (turnDirection[1] > 0) {
+  // Check the turn direction (left or right, and forward or backward)
+  if (turnDirection[0] == 0 && turnDirection[1] == 0) {
     positions[0] = innerSteps; //right motor absolute position
     positions[1] = outerSteps; //left motor absolute position
     steppers.moveTo(positions);
-    //stepperRight.moveTo(innerSteps);
-    //stepperLeft.moveTo(outerSteps);
-    //stepperRight.setMaxSpeed(innerSpeed); //set right motor speed
-    //stepperLeft.setMaxSpeed(outerSpeed); //set left motor speed
-  } else {
+  }
+  else if (turnDirection[0] == 0 && turnDirection[1] == 1) {
     positions[0] = outerSteps; //right motor absolute position
     positions[1] = innerSteps; //left motor absolute position
     steppers.moveTo(positions);
-    //stepperRight.moveTo(outerSteps);
-    //stepperLeft.moveTo(innerSteps);
-    //stepperRight.setMaxSpeed(outerSpeed); //set right motor speed
-    //stepperLeft.setMaxSpeed(innerSpeed); //set left motor speed
   }
-  steppers.runSpeedToPosition(); // Blocks until all are in position
+  else if (turnDirection[0] == 1 && turnDirection[1] == 0) {
+    positions[0] = -innerSteps; //right motor absolute position
+    positions[1] = -outerSteps; //left motor absolute position
+    steppers.moveTo(positions);
+  }
+  else {
+    positions[0] = -outerSteps; //right motor absolute position
+    positions[1] = -innerSteps; //left motor absolute position
+    steppers.moveTo(positions);
+  }
 
-  /*
-  stepperRight.setCurrentPosition(0);
-  stepperLeft.setCurrentPosition(0);
-  if (direction > 0) {
-    stepperRight.moveTo(500);
-    stepperLeft.moveTo(1000);
-    stepperRight.setMaxSpeed(250); //set right motor speed
-    stepperLeft.setMaxSpeed(500); //set left motor speed
-    stepperRight.runSpeedToPosition(); //move right motor
-     stepperLeft.runSpeedToPosition(); //move left motor
-  } else {
-    stepperRight.moveTo(1000);
-    stepperLeft.moveTo(500);
-    stepperRight.setMaxSpeed(500); //set right motor speed
-    stepperLeft.setMaxSpeed(250); //set left motor speed
-    stepperRight.runSpeedToPosition(); //move right motor
-     stepperLeft.runSpeedToPosition(); //move left motor
-  }
-  runToStop(); //run until the robot reaches the target
-  */
+  steppers.runSpeedToPosition(); // Blocks until all are in position
 }
 
 /**
@@ -935,7 +911,7 @@ void loop()
   //pivot(1);
   //spin(1);
   bool dir[2] = {1,1};
-  turn(15, dir);
+  turn(60, dir);
 
   /*
   moveCircle(100, 1);
