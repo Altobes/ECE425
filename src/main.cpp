@@ -109,12 +109,17 @@ MultiStepper steppers; //create instance to control multiple steppers at the sam
 #define stepperEnTrue false   //variable for enabling stepper motor
 #define stepperEnFalse true   //variable for disabling stepper motor
 
+
 const unsigned short PAUSE_TIME = 2500;         //time before robot moves
 const unsigned short STEP_TIME = 500;           //delay time between high and low on step pin
 const unsigned short WAIT_TIME = 15000;         //delay for printing data
 const float FULL_REV = 800.0;                   //A4988 Stepper Motor Driver quarter step ticks for full revolution of wheel
 
 const float WIDTH_BOT = 23.3; //cm
+const float RADIUS_BOT = 4.25; //cm
+const float STEPS_TO_CM = 29.9586; 
+const float TICKS_TO_STEPS = 1/20;
+const float STEPS_TO_TICKS = 20;
 
 //define encoder pins
 #define LEFT 0                            //left encoder
