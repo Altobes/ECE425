@@ -592,10 +592,8 @@ void spin(int direction) { //Currently overshoots sometimes
     stepperRight.moveTo(2000);
     stepperLeft.moveTo(-2000);
   }
-  stepperRight.setMaxSpeed(500); //set right motor speeda
-  stepperLeft.setMaxSpeed(500); //set left motor speed
-  stepperRight.runSpeedToPosition(); //move right motor
-  stepperLeft.runSpeedToPosition(); //move left motor
+  setBothStepperSpeed(500, 500); //set motor speeds
+  runAtSpeedToPosition(); //move motors
   runToStop(); //run until the robot reaches the target
 }
 
@@ -624,17 +622,12 @@ void turn(float radius, bool turnDirection[2]) {
       3. Have outer turn proportionally less than inner
   */
 
-  stepperRight.setCurrentPosition(0);
-  stepperLeft.setCurrentPosition(0);
-  stepperLeft.setMaxSpeed(400);
-  stepperRight.setMaxSpeed(400);
+  setBothStepperCurrentPosition(0, 0); //reset stepper positions
+  setBothStepperSpeed(400, 400); //set motor speeds
 
-  float diam = 60.0*radius/18;
-  float inner = 2.0 * 3.14 * ((diam/2.0) - WIDTH_BOT/2.0) * (90.0/360.0);
-  float outer = 2.0 * 3.14 * ((diam/2.0) + WIDTH_BOT/2.0) * (90.0/360.0);
-
-  Serial.println(inner);
-  Serial.println(outer);
+  //float diam = 60.0*radius/18; //60 steps per 18cm
+  float inner = 2.0 * 3.14 * (radius*1.2 - WIDTH_BOT/2.0) * (90.0/360.0) *0.95;
+  float outer = 2.0 * 3.14 * (radius*1.2 + WIDTH_BOT/2.0) * (90.0/360.0) *0.95;
 
   int innerSteps = inner * 29.958;
   int outerSteps = outer * 29.958;
@@ -643,23 +636,23 @@ void turn(float radius, bool turnDirection[2]) {
   
   // Check the turn direction (left or right, and forward or backward)
   if (turnDirection[0] == 0 && turnDirection[1] == 0) {
-    positions[0] = innerSteps; //right motor absolute position
-    positions[1] = outerSteps; //left motor absolute position
-    steppers.moveTo(positions);
-  }
-  else if (turnDirection[0] == 0 && turnDirection[1] == 1) {
     positions[0] = outerSteps; //right motor absolute position
     positions[1] = innerSteps; //left motor absolute position
     steppers.moveTo(positions);
   }
+  else if (turnDirection[0] == 0 && turnDirection[1] == 1) {
+    positions[0] = innerSteps; //right motor absolute position
+    positions[1] = outerSteps; //left motor absolute position
+    steppers.moveTo(positions);
+  }
   else if (turnDirection[0] == 1 && turnDirection[1] == 0) {
-    positions[0] = -innerSteps; //right motor absolute position
-    positions[1] = -outerSteps; //left motor absolute position
+    positions[0] = -outerSteps; //right motor absolute position
+    positions[1] = -innerSteps; //left motor absolute position
     steppers.moveTo(positions);
   }
   else {
-    positions[0] = -outerSteps; //right motor absolute position
-    positions[1] = -innerSteps; //left motor absolute position
+    positions[0] = -innerSteps; //right motor absolute position
+    positions[1] = -outerSteps; //left motor absolute position
     steppers.moveTo(positions);
   }
 
@@ -677,8 +670,7 @@ void forward(int distance) {
   Serial.print(steps);
   stepperRight.moveTo(steps); //move one full rotation forward relative to current position
   stepperLeft.moveTo(steps); //move one full rotation forward relative to current position
-  stepperRight.setMaxSpeed(500); //set right motor speed
-  stepperLeft.setMaxSpeed(500); //set left motor speed
+  setBothStepperSpeed(500, 500); //set stepper speeds
   stepperRight.runSpeedToPosition(); //move right motor
   stepperLeft.runSpeedToPosition(); //move left motor
 
@@ -697,12 +689,10 @@ void forward(int distance) {
   }
 
   int correction = 40* max(errorLeft, errorRight);
-  stepperRight.setCurrentPosition(0);
-  stepperLeft.setCurrentPosition(0);
+  setBothStepperCurrentPosition(0, 0); //reset stepper positions
   stepperRight.moveTo(correction); //move one full rotation forward relative to current position
   stepperLeft.moveTo(correction); //move one full rotation forward relative to current position
-  stepperRight.setMaxSpeed(250); //set right motor speed
-  stepperLeft.setMaxSpeed(250); //set left motor speed
+  setBothStepperSpeed(250, 250); //set stepper speeds
   stepperRight.runSpeedToPosition(); //move right motor
   stepperLeft.runSpeedToPosition(); //move left motor
   runToStop();
@@ -741,10 +731,8 @@ void stop() {
 */
 void moveCircle(int diam, int dir) {
   digitalWrite(blueLED, HIGH); //turn off red LED
-  stepperRight.setCurrentPosition(0);
-  stepperLeft.setCurrentPosition(0);
-  stepperLeft.setMaxSpeed(500);
-  stepperRight.setMaxSpeed(500);
+  setBothStepperCurrentPosition(0, 0); //reset stepper positions
+  setBothStepperSpeed(500, 500); //set stepper speeds
 
   float dist = 2 * 3.14 * (diam/2);
   float inner = 2 * 3.14 * ((diam/2) - WIDTH_BOT/2) * 0.9;
@@ -758,31 +746,17 @@ void moveCircle(int diam, int dir) {
   Serial.println(outerSteps*(40.0/FULL_REV));
   Serial.println(innerSteps*(40.0/FULL_REV));
   long positions[2]; // Array of desired stepper positions
-  
-  //delay(1000); //wait one second
 
   if (dir > 0) {
     positions[0] = innerSteps; //right motor absolute position
     positions[1] = outerSteps; //left motor absolute position
     steppers.moveTo(positions);
-    //stepperRight.moveTo(innerSteps);
-    //stepperLeft.moveTo(outerSteps);
-    //stepperRight.setMaxSpeed(innerSpeed); //set right motor speed
-    //stepperLeft.setMaxSpeed(outerSpeed); //set left motor speed
   } else {
     positions[0] = outerSteps; //right motor absolute position
     positions[1] = innerSteps; //left motor absolute position
     steppers.moveTo(positions);
-    //stepperRight.moveTo(outerSteps);
-    //stepperLeft.moveTo(innerSteps);
-    //stepperRight.setMaxSpeed(outerSpeed); //set right motor speed
-    //stepperLeft.setMaxSpeed(innerSpeed); //set left motor speed
   }
   steppers.runSpeedToPosition(); // Blocks until all are in position
-  //runToStop();
-  //stepperRight.runSpeedToPosition(); //move right motor
-  //stepperLeft.runSpeedToPosition(); //move left motor
-  //runToStop();
   digitalWrite(blueLED, LOW); //turn off red LED
 }
 
@@ -831,7 +805,6 @@ void goToAngle(float angle) {
   digitalWrite(blueLED, LOW); //turn off red LED
   digitalWrite(grnLED, HIGH); //turn on green LED
   digitalWrite(ylwLED, LOW); //turn off yellow LED
-
 
 }
 
@@ -915,7 +888,7 @@ void loop()
   
   //pivot(1);
   //spin(1);
-  bool dir[2] = {1,1};
+  bool dir[2] = {0,1};
   turn(60, dir);
 
   /*
