@@ -844,11 +844,17 @@ void goToAngle(float angle) {
 /**
  * 
 */
-void goToGoal(float x, float y) {
+void goToGoal(float x, float y) { //Whats input?
   digitalWrite(blueLED, LOW); //turn off red LED
   digitalWrite(grnLED, HIGH); //turn on green LED
   digitalWrite(ylwLED, HIGH); //turn on yellow LED
 
+  double radians = atan(y/x); //returns angle to x, y
+  float angle = radians * 57.2958;
+  goToAngle(angle);
+  float distance = sqrt((x*x) + (y*y));
+
+  forward(distance); 
 
 }
 
@@ -860,7 +866,10 @@ void moveSquare(float sideLength) {
   digitalWrite(grnLED, HIGH); //turn on green LED
   digitalWrite(ylwLED, HIGH); //turn on yellow LED
 
-
+  forward(sideLength);
+  forward(sideLength);
+  forward(sideLength);
+  forward(sideLength);
 }
 
 //// MAIN
