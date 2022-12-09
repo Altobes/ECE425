@@ -117,9 +117,9 @@ const float FULL_REV = 800.0;                   //A4988 Stepper Motor Driver qua
 
 const float WIDTH_BOT = 23.3; //cm
 const float RADIUS_BOT = 11.7; //cm
-const float CM_TO_STEPS = 29.9586; 
-const float TICKS_TO_STEPS = 1/20;
-const float STEPS_TO_TICKS = 20;
+const float CM_TO_STEPS = 25.6; 
+const float TICKS_TO_STEPS = 20.0;
+const float STEPS_TO_TICKS = 1.0/20.0;
 
 //define encoder pins
 #define LEFT 0                            //left encoder
@@ -665,6 +665,9 @@ void turn(float radius, bool turnDirection[2]) {
  * @param distance A value in centimeters
 */
 void forward(int distance) {
+  encoder[LEFT] = 0;
+  encoder[RIGHT] = 0;
+
   float steps = distance * 29.9586;
   float ticks = steps * (40/FULL_REV);
   Serial.print(steps);
@@ -676,19 +679,10 @@ void forward(int distance) {
 
   runToStop(); //run until the robot reaches the target
 
-  int errorLeft;
-  int errorRight;
-  if (ltEncoder < ticks) {
-    errorLeft = ticks-ltEncoder;
-  }
-  if (rtEncoder < ticks) {
-    errorRight = ticks-rtEncoder;
-  }
-  if (rtEncoder < ticks) {
-    errorLeft = ticks-ltEncoder;
-  }
+  int errorLeft = ticks - encoder[LEFT];
+  int errorRight = ticks - encoder[RIGHT];
 
-  int correction = 40* max(errorLeft, errorRight);
+  int correction = TICKS_TO_STEPS * max(errorLeft, errorRight);
   setBothStepperCurrentPosition(0, 0); //reset stepper positions
   stepperRight.moveTo(correction); //move one full rotation forward relative to current position
   stepperLeft.moveTo(correction); //move one full rotation forward relative to current position
@@ -784,14 +778,6 @@ void moveFigure8(int diam) {
   float innerSpeed = inner/time;
 
   moveCircle(diam, -1);
-  int errorInner;
-  int errorOuter;
-  if (innerTicks < ltEncoder) {
-    errorInner = innerTicks - ltEncoder;
-  }
-  if (outerTicks < rtEncoder) {
-    errorOuter = outerTicks - rtEncoder;
-  }
   
   moveCircle(diam, 1);
   digitalWrite(blueLED, LOW); //turn off red LED
@@ -802,37 +788,46 @@ void moveFigure8(int diam) {
  * 
 */
 void goToAngle(float angle) {
-  int initialLeftTicks = ltEncoder;
-  int initialRightTicks = rtEncoder;
+  encoder[LEFT] = 0;
+  encoder[RIGHT] = 0;
   digitalWrite(blueLED, LOW); //turn off red LED
   digitalWrite(grnLED, HIGH); //turn on green LED
   digitalWrite(ylwLED, LOW); //turn off yellow LED
-  float arclength = 2.0 * 3.1415 * RADIUS_BOT * (angle/360.0);
+  float arclength = 2.0 * PI * RADIUS_BOT * (angle/360.0) * 1.12;
   int steps = arclength * CM_TO_STEPS;
   int ticks = steps * STEPS_TO_TICKS;
+  ticks = abs(ticks);
 
-  stepperRight.moveTo(-steps);
-  stepperLeft.moveTo(steps);
-
-  Serial.println("Steps: " + steps);
+  stepperRight.moveTo(steps);
+  stepperLeft.moveTo(-steps);
+  Serial.print("Steps: ");
+  Serial.println(steps);
+  Serial.print("Ticks: ");
+  Serial.println(ticks);
 
   setBothStepperSpeed(500, 500); //set motor speeds
   stepperRight.runSpeedToPosition(); //move right motor
-  stepperLeft.runSpeedToPosition(); //move left motor
+  stepperLeft.runSpeedToPosition(); //move left motorw
   runToStop();
   
-  Serial.println(ltEncoder);
-  Serial.println(rtEncoder);
-  int errorLeft = (ticks + initialLeftTicks) - ltEncoder;
-  int errorRight = (ticks + initialRightTicks) - rtEncoder;
-  Serial.println("Error Left: " + errorLeft);
-  Serial.println("Error Right: " + errorRight);
+  
+  Serial.print("Left Encoder: ");
+  Serial.println(encoder[LEFT]);
+  Serial.println("Right Endoder: ");
+  Serial.println(encoder[RIGHT]);
+  int errorLeft = ticks - encoder[LEFT];
+  int errorRight = ticks - encoder[RIGHT];
+  Serial.print("Error Left: ");
+  Serial.println(errorLeft);
+  Serial.print("Error Right: ");
+  Serial.println(errorRight);
 
   int correctStepsLeft = errorLeft * TICKS_TO_STEPS;
   int correctStepsRight = errorRight * TICKS_TO_STEPS;
 
   setBothStepperCurrentPosition(0, 0); //reset stepper positions
-
+  Serial.print("Correction steps: ");
+  Serial.println(correctStepsLeft);
   stepperRight.moveTo(-correctStepsRight);
   stepperLeft.moveTo(correctStepsLeft);
   stepperRight.runSpeedToPosition(); //move right motor
@@ -844,13 +839,16 @@ void goToAngle(float angle) {
 /**
  * 
 */
-void goToGoal(float x, float y) { //Whats input?
+void goToGoal(float x, float y) { //Whats input? assuming cm 
   digitalWrite(blueLED, LOW); //turn off red LED
   digitalWrite(grnLED, HIGH); //turn on green LED
   digitalWrite(ylwLED, HIGH); //turn on yellow LED
 
-  double radians = atan(y/x); //returns angle to x, y
-  float angle = radians * 57.2958;
+  double radians = atan2(y, x); //returns angle to x, y in radians
+  
+  float angle = (radians * 180.0/PI);
+  Serial.print("Degrees: ");
+  Serial.println(angle);
   goToAngle(angle);
   float distance = sqrt((x*x) + (y*y));
 
@@ -867,8 +865,11 @@ void moveSquare(float sideLength) {
   digitalWrite(ylwLED, HIGH); //turn on yellow LED
 
   forward(sideLength);
+  goToAngle(90);
   forward(sideLength);
+  goToAngle(90);
   forward(sideLength);
+  goToAngle(90);
   forward(sideLength);
 }
 
@@ -932,8 +933,16 @@ void loop()
   //spin(1);
   //bool dir[2] = {1,1};
   //turn(15, dir);
-  delay(3000);
-  goToAngle(90);
+  delay(2000);
+  goToAngle(-60);
+  delay(5000);
+  goToAngle(135);
+  delay(5000);
+  goToGoal(0, 100);
+  delay(5000);
+  goToGoal(-67, 100);
+  delay(5000);
+  moveSquare(100);
   //print_encoder_data();
 
   //delay(wait_time);               //wait to move robot or read data
