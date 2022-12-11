@@ -874,7 +874,7 @@ void setup()
     delay(10); // will pause until serial console opens
   }
 
-  //init_BT(); //initialize Bluetooth
+  init_BT(); //initialize Bluetooth
 
   //init_IMU(); //initialize IMU
   
