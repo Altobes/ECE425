@@ -670,7 +670,7 @@ void forward(int distance) {
 
   float steps = distance * 29.9586;
   float ticks = steps * (40/FULL_REV);
-  Serial.print(steps);
+  
   stepperRight.moveTo(steps); //move one full rotation forward relative to current position
   stepperLeft.moveTo(steps); //move one full rotation forward relative to current position
   setBothStepperSpeed(500, 500); //set stepper speeds
@@ -728,19 +728,13 @@ void moveCircle(int diam, int dir) {
   setBothStepperCurrentPosition(0, 0); //reset stepper positions
   setBothStepperSpeed(500, 500); //set stepper speeds
 
-  float dist = 2 * 3.14 * (diam/2);
   float inner = 2 * 3.14 * ((diam/2) - WIDTH_BOT/2) * 0.9;
   float outer = 2 * 3.14 * ((diam/2) + WIDTH_BOT/2) * 0.9;
 
   int innerSteps = inner * 29.958;
   int outerSteps = outer * 29.958;
   
-  Serial.println(innerSteps);
-  Serial.println(outerSteps);
-  Serial.println(outerSteps*(40.0/FULL_REV));
-  Serial.println(innerSteps*(40.0/FULL_REV));
   long positions[2]; // Array of desired stepper positions
-
   if (dir > 0) {
     positions[0] = innerSteps; //right motor absolute position
     positions[1] = outerSteps; //left motor absolute position
@@ -758,34 +752,21 @@ void moveCircle(int diam, int dir) {
  * The moveFigure8() function takes the diameter in inches as the input.
  * It uses the moveCircle() function twice with 2 different direcitons to create a figure 8 with circles of the given diameter.
  * 
- * @param diam the diameter in inches
+ * @param diam the diameter in centimeters
 */
 void moveFigure8(int diam) {
   digitalWrite(blueLED, HIGH); //turn off red LED
   digitalWrite(ylwLED, HIGH); //turn on yellow LED
 
-  float dist = 2 * 3.14 * (diam/2);
-  float inner = 2 * 3.14 * ((diam/2) - WIDTH_BOT/2) * 0.9;
-  float outer = 2 * 3.14 * ((diam/2) + WIDTH_BOT/2) * 0.9;
-
-  float innerSteps = inner * 29.958;
-  float outerSteps = outer * 29.958;
-  int innerTicks = innerSteps * 40;
-  int outerTicks = outerSteps * 40;
-
-  float outerSpeed = 250;
-  float time = 1/(outerSpeed/outer);
-  float innerSpeed = inner/time;
-
   moveCircle(diam, -1);
-  
   moveCircle(diam, 1);
   digitalWrite(blueLED, LOW); //turn off red LED
   digitalWrite(ylwLED, LOW); //turn on yellow LED
 }
 
 /**
- * 
+ Calculates arc length needed to turn to angle and calls multistepper to turn robot
+ After turning, encoders are used to error check and move robot again if it moved too much or too little
 */
 void goToAngle(float angle) {
   encoder[LEFT] = 0;
@@ -837,9 +818,11 @@ void goToAngle(float angle) {
 }
 
 /**
- * 
+ Give the robot x y coordiantes in cm 
+ Robot will then call goToAngle and spin to a direction that points to the coordiante
+ Will then go calcualted distance to reach coordinate
 */
-void goToGoal(float x, float y) { //Whats input? assuming cm 
+void goToGoal(float x, float y) {
   digitalWrite(blueLED, LOW); //turn off red LED
   digitalWrite(grnLED, HIGH); //turn on green LED
   digitalWrite(ylwLED, HIGH); //turn on yellow LED
@@ -856,8 +839,9 @@ void goToGoal(float x, float y) { //Whats input? assuming cm
 
 }
 
-/**
- * 
+/*
+  Funtion moves the robot in a square by calling forward 4 times with a given side length, with calls to goToAngle at 90 degrees between them
+  Should move the robot in a perfect square
 */
 void moveSquare(float sideLength) {
   digitalWrite(blueLED, HIGH); //turn on red LED
