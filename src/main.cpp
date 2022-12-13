@@ -42,6 +42,13 @@
  * Hardware Connections:
  *  Arduino pin mappings: https://www.arduino.cc/en/Hacking/PinMapping2560
  * 
+ *  MPU6050 Pinout:
+ *    digital pin 2 - INT
+ *    SDA pin 20 - SDA
+ *    SCL pin 21 - SCL
+ *    GND - GND
+ *    VCC - 5V rail
+ * 
  *  A4988 Stepper Motor Driver Pinout: https://www.pololu.com/product/1182
  *    digital pin 48 - enable PIN on A4988 Stepper Motor Driver StepSTICK
  *    digital pin 50 - right stepper motor step pin
